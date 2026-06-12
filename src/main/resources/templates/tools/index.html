@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <form class="data-panel form-panel" th:action="@{/tools}" th:object="${toolForm}" method="post">
+                <h2>Nueva herramienta</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="name">Herramienta</label>
+                        <input class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="serialNumber">Número de serie</label>
+                        <input class="form-control" id="serialNumber" th:field="*{serialNumber}" th:errorclass="is-invalid">
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="status">Estado</label>
+                        <select class="form-select" id="status" th:field="*{status}">
+                            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}"></option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="nextMaintenanceDate">Mantenimiento</label>
+                        <input class="form-control" id="nextMaintenanceDate" type="date" th:field="*{nextMaintenanceDate}">
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar herramienta</button>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2>Herramientas</h2>
+                </div>
+                <div class="row g-3 p-3 pb-0">
+                    <div class="col-xl col-md-6">
+                        <div class="stat-card accent-blue">
+                            <span>Herramientas filtradas</span>
+                            <strong th:text="${summary.totalTools}">0</strong>
+                            <small>Equipos activos</small>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6">
+                        <div class="stat-card accent-green">
+                            <span>Disponibles</span>
+                            <strong th:text="${summary.availableTools}">0</strong>
+                            <small>Listas para obra</small>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6">
+                        <div class="stat-card accent-blue">
+                            <span>En uso</span>
+                            <strong th:text="${summary.inUseTools}">0</strong>
+                            <small>Asignadas actualmente</small>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6">
+                        <div class="stat-card accent-amber">
+                            <span>Mantenimiento vencido</span>
+                            <strong th:text="${summary.maintenanceDueTools}">0</strong>
+                            <small>Requieren revision</small>
+                        </div>
+                    </div>
+                    <div class="col-xl col-md-6">
+                        <div class="stat-card accent-dark">
+                            <span>No operativas</span>
+                            <strong th:text="${summary.unavailableTools}">0</strong>
+                            <small>Perdidas o retiradas</small>
+                        </div>
+                    </div>
+                </div>
+                <form class="row g-2 mb-3" th:action="@{/tools}" method="get">
+                    <div class="col-lg-5">
+                        <label class="form-label" for="toolSearch">Buscar</label>
+                        <input class="form-control" id="toolSearch" name="q" th:value="${query}"
+                               placeholder="Herramienta o numero de serie">
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="toolStatusFilter">Estado</label>
+                        <select class="form-select" id="toolStatusFilter" name="status">
+                            <option value="">Todos</option>
+                            <option th:each="status : ${statuses}"
+                                    th:value="${status}"
+                                    th:selected="${selectedStatus == status}"
+                                    th:text="${status.label}">Disponible</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" id="maintenanceDue" name="maintenanceDue" type="checkbox"
+                                   value="true" th:checked="${maintenanceDue}">
+                            <label class="form-check-label" for="maintenanceDue">Mantenimiento</label>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-outline-primary w-100" type="submit">
+                            <i class="fa-solid fa-filter"></i> Filtrar
+                        </button>
+                        <a class="btn btn-outline-dark" th:href="@{/tools}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Herramienta</th>
+                            <th>Número de serie</th>
+                            <th>Estado</th>
+                            <th>Próximo mantenimiento</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="tool : ${tools}">
+                            <td><strong th:text="${tool.name}">Herramienta</strong></td>
+                            <td th:text="${tool.serialNumber}">Serie</td>
+                            <td><span class="badge-status" th:classappend="${'status-' + tool.status}" th:text="${tool.status.label}">Estado</span></td>
+                            <td th:text="${tool.nextMaintenanceDate}">Fecha</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/tools/{id}(id=${tool.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/tools/{id}/edit(id=${tool.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/tools/{id}/archive(id=${tool.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-box-archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tools)}">
+                            <td colspan="5" class="text-center text-muted py-4">No hay herramientas que coincidan con los filtros.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

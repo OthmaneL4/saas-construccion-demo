@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${material.name}">Material</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/materials/{id}/edit(id=${material.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/materials/{id}/archive(id=${material.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/materials}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Unidad</span><strong th:text="${material.unit}">Unidad</strong></div>
+                    <div class="detail-item"><span>Stock</span><strong th:text="${material.stockQuantity}">0</strong></div>
+                    <div class="detail-item"><span>Stock minimo</span><strong th:text="${material.minimumStock}">0</strong></div>
+                    <div class="detail-item"><span>Coste unitario</span><strong th:text="${'EUR ' + #numbers.formatDecimal(material.unitCost, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                    <div class="detail-item">
+                        <span>Estado</span>
+                        <strong>
+                            <span th:if="${material.lowStock}" class="badge-status status-LOW">Stock bajo</span>
+                            <span th:unless="${material.lowStock}" class="badge-status status-PLANNED">Correcto</span>
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div class="dashboard-hero mb-4">
+                <div>
+                    <span class="eyebrow">Resumen ejecutivo</span>
+                    <h2>Control diario de LSOTOTALBOUW</h2>
+                    <p>Facturacion, cobros, proyectos y alertas operativas desde una sola pantalla.</p>
+                </div>
+                <div class="hero-actions">
+                    <a class="btn btn-light btn-sm" th:href="@{/receivables}">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Cobros pendientes
+                    </a>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/calendar}">
+                        <i class="fa-solid fa-calendar-days"></i> Agenda
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-blue">
+                        <div class="stat-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <span>Facturado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalInvoiced, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Total emitido</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-green">
+                        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <span>Cobrado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalPaid, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Entradas confirmadas</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-amber">
+                        <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                        <span>Gastos</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalExpenses, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Costes registrados</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-dark">
+                        <div class="stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <span>Resultado neto</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.netResult, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Cobrado menos gastos</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions mb-4">
+                <a class="action-card" th:href="@{/projects}">
+                    <i class="fa-solid fa-helmet-safety"></i>
+                    <strong>Nuevo proyecto</strong>
+                    <span>Planifica una obra o reforma.</span>
+                </a>
+                <a class="action-card" th:href="@{/invoices}">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                    <strong>Crear factura</strong>
+                    <span>Controla cobros y vencimientos.</span>
+                </a>
+                <a class="action-card" th:href="@{/receivables}">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <strong>Cobros pendientes</strong>
+                    <span>Prioriza facturas vencidas y reclamaciones.</span>
+                </a>
+                <a class="action-card" th:href="@{/expenses}">
+                    <i class="fa-solid fa-receipt"></i>
+                    <strong>Registrar gasto</strong>
+                    <span>Materiales, transporte o alquiler.</span>
+                </a>
+            </div>
+
+            <div class="data-panel mb-4">
+                <div class="panel-title">
+                    <h2>Alertas operativas</h2>
+                    <a th:href="@{/notifications}" class="btn btn-sm btn-outline-primary">Ver alertas</a>
+                </div>
+                <div class="list-group list-group-flush" th:if="${!#lists.isEmpty(alerts)}">
+                    <a class="list-group-item d-flex align-items-start gap-3 py-3 text-decoration-none"
+                       th:each="alert : ${alerts}"
+                       th:href="${alert.href}">
+                        <span class="badge-status mt-1" th:classappend="${' status-' + alert.statusClass}">
+                            <i class="fa-solid" th:classappend="${' ' + alert.icon}"></i>
+                            <span th:text="${alert.severity}">info</span>
+                        </span>
+                        <span class="flex-grow-1">
+                            <strong class="d-block text-body" th:text="${alert.title}">Alerta</strong>
+                            <span class="text-secondary small" th:text="${alert.message}">Detalle</span>
+                        </span>
+                        <span class="text-secondary small text-nowrap" th:if="${alert.dueDate != null}" th:text="${alert.dueDate}">Fecha</span>
+                    </a>
+                </div>
+                <div class="empty-state" th:if="${#lists.isEmpty(alerts)}">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <strong>Sin alertas criticas</strong>
+                    <span>No hay vencimientos urgentes, stock bajo o mantenimientos pendientes.</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-xl-7">
+                    <div class="data-panel">
+                        <div class="panel-title">
+                            <h2>Proyectos recientes</h2>
+                            <a th:href="@{/projects}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Proyecto</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th>Presupuesto</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="project : ${projects}">
+                                    <td>
+                                        <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                                    </td>
+                                    <td th:text="${project.customer.name}">Cliente</td>
+                                    <td>
+                                        <span class="badge-status" th:classappend="${'status-' + project.status}" th:text="${project.status.label}">Estado</span>
+                                    </td>
+                                    <td th:text="${'EUR ' + #numbers.formatDecimal(project.budget, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(projects)}">
+                                    <td colspan="4" class="text-center text-muted py-4">Todavia no hay proyectos registrados.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-5">
+                    <div class="data-panel mb-4">
+                        <div class="panel-title">
+                            <h2>Facturas pendientes</h2>
+                            <a th:href="@{/invoices}" class="btn btn-sm btn-outline-primary">Gestionar</a>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center" th:each="invoice : ${invoices}">
+                                <div>
+                                    <a th:href="@{/invoices/{id}(id=${invoice.id})}" class="fw-bold" th:text="${invoice.invoiceNumber}">2026-0001</a>
+                                    <div class="text-secondary small" th:text="${invoice.customer.name}">Cliente</div>
+                                    <span class="badge-status mt-1" th:classappend="${'status-' + invoice.status}" th:text="${invoice.status.label}">Estado</span>
+                                </div>
+                                <div class="text-end">
+                                    <strong th:text="${'EUR ' + #numbers.formatDecimal(invoice.amount.subtract(invoice.paidAmount), 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                                    <div class="text-secondary small">pendiente</div>
+                                    <div class="text-secondary small" th:text="${invoice.dueDate}">Fecha</div>
+                                </div>
+                            </div>
+                            <div class="empty-state compact" th:if="${#lists.isEmpty(invoices)}">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                                <strong>Sin facturas abiertas</strong>
+                                <span>Cuando haya facturas pendientes apareceran aqui.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-panel">
+                        <div class="panel-title">
+                            <h2>Indicadores rapidos</h2>
+                        </div>
+                        <div class="indicator-list">
+                            <div><span>Clientes</span><strong th:text="${summary.customers}">0</strong></div>
+                            <div><span>Proyectos activos</span><strong th:text="${summary.activeProjects}">0</strong></div>
+                            <div><span>Facturas abiertas</span><strong th:text="${summary.pendingInvoices}">0</strong></div>
+                            <div><span>Pendiente real</span><strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalOutstanding, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                            <div><span>Facturas vencidas</span><strong th:text="${summary.overdueInvoices}">0</strong></div>
+                            <div><span>Vencen en 7 dias</span><strong th:text="${summary.dueSoonInvoices}">0</strong></div>
+                            <div><span>Stock bajo</span><strong th:text="${summary.lowStockMaterials}">0</strong></div>
+                            <div><span>Herramientas en mantenimiento</span><strong th:text="${summary.toolsInMaintenance}">0</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

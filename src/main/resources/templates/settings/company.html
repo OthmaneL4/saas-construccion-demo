@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <form class="data-panel form-panel" th:action="@{/settings/company}" th:object="${companySettingsForm}" method="post">
+                <div class="panel-title">
+                    <div>
+                        <h2>Datos de empresa</h2>
+                        <p class="text-secondary mb-0">Informacion usada en facturas, presupuestos y documentos.</p>
+                    </div>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                    </button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <label class="form-label" for="name">Nombre comercial</label>
+                        <input class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="form-label" for="vatNumber">N fiscal / BTW</label>
+                        <input class="form-control" id="vatNumber" th:field="*{vatNumber}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{vatNumber}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" type="email" th:field="*{email}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="phone">Telefono</label>
+                        <input class="form-control" id="phone" th:field="*{phone}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{phone}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="address">Direcci</label>
+                        <input class="form-control" id="address" th:field="*{address}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{address}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="kvkNumber">KvK</label>
+                        <input class="form-control" id="kvkNumber" th:field="*{kvkNumber}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{kvkNumber}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="iban">IBAN</label>
+                        <input class="form-control" id="iban" th:field="*{iban}" th:errorclass="is-invalid"
+                               placeholder="NL00BANK0123456789">
+                        <div class="invalid-feedback" th:errors="*{iban}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="paymentTermsDays">Plazo de pago</label>
+                        <div class="input-group">
+                            <input class="form-control" id="paymentTermsDays" type="number" min="0" max="120"
+                                   th:field="*{paymentTermsDays}" th:errorclass="is-invalid">
+                            <span class="input-group-text">d</span>
+                            <div class="invalid-feedback" th:errors="*{paymentTermsDays}"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

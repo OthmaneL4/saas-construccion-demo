@@ -1,0 +1,43 @@
+name: LSOTOTALBOUW CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - "codex/**"
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+concurrency:
+  group: lsototalbouw-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: windows-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Compile application
+        shell: pwsh
+        run: .\mvnw.cmd -q -DskipTests compile
+
+      - name: Run automated test suite
+        shell: pwsh
+        run: .\mvnw.cmd -q test

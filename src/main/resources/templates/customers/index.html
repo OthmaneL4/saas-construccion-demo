@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <form class="data-panel form-panel" th:action="@{/customers}" th:object="${customerForm}" method="post">
+                <h2>Nuevo cliente</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="name">Nombre</label>
+                        <input class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" type="email" th:field="*{email}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="phone">Teléfono</label>
+                        <input class="form-control" id="phone" th:field="*{phone}" th:errorclass="is-invalid">
+                    </div>
+                    <div class="col-lg-8">
+                        <label class="form-label" for="address">Dirección</label>
+                        <input class="form-control" id="address" th:field="*{address}" th:errorclass="is-invalid">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="city">Ciudad</label>
+                        <input class="form-control" id="city" th:field="*{city}" th:errorclass="is-invalid">
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar cliente</button>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2>Clientes</h2>
+                </div>
+                <form class="row g-2 mb-3" th:action="@{/customers}" method="get">
+                    <div class="col-lg-10">
+                        <label class="form-label" for="customerSearch">Buscar</label>
+                        <input class="form-control" id="customerSearch" name="q" th:value="${query}" placeholder="Nombre, email, telefono o ciudad">
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-outline-primary w-100" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+                        <a class="btn btn-outline-dark" th:href="@{/customers}"><i class="fa-solid fa-xmark"></i></a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Ciudad</th>
+                            <th>Dirección</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="customer : ${customerPage.content}">
+                            <td><strong th:text="${customer.name}">Cliente</strong></td>
+                            <td th:text="${customer.email}">email</td>
+                            <td th:text="${customer.phone}">tel</td>
+                            <td th:text="${customer.city}">ciudad</td>
+                            <td th:text="${customer.address}">dirección</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/customers/{id}(id=${customer.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/customers/{id}/edit(id=${customer.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/customers/{id}/archive(id=${customer.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-box-archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(customerPage.content)}">
+                            <td colspan="6" class="text-center text-muted py-4">No hay clientes que coincidan con la busqueda.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <span class="text-muted small" th:text="${customerPage.totalElements + ' clientes'}">0 clientes</span>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:classappend="${customerPage.first} ? ' disabled'"
+                           th:href="@{/customers(q=${query},page=${customerPage.number - 1})}">Anterior</a>
+                        <span class="btn btn-sm btn-outline-secondary disabled" th:text="${(customerPage.number + 1) + ' / ' + customerPage.totalPages}">1 / 1</span>
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:classappend="${customerPage.last} ? ' disabled'"
+                           th:href="@{/customers(q=${query},page=${customerPage.number + 1})}">Siguiente</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

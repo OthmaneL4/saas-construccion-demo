@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${event.title}">Evento</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/calendar/{id}/edit(id=${event.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/calendar/{id}/archive(id=${event.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/calendar}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Fecha</span><strong th:text="${event.eventDate}">Fecha</strong></div>
+                    <div class="detail-item"><span>Tipo</span><strong th:text="${event.type.label}">Tipo</strong></div>
+                    <div class="detail-item"><span>Proyecto</span><strong th:text="${event.project != null ? event.project.name : '-'}">Proyecto</strong></div>
+                    <div class="detail-item"><span>Notas</span><strong th:text="${event.notes ?: '-'}">Notas</strong></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

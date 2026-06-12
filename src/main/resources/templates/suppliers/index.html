@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <form class="data-panel form-panel" th:action="@{/suppliers}" th:object="${supplierForm}" method="post">
+                <h2>Nuevo proveedor</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="name">Proveedor</label>
+                        <input class="form-control" id="name" th:field="*{name}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="contactName">Contacto</label>
+                        <input class="form-control" id="contactName" th:field="*{contactName}">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" type="email" th:field="*{email}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label" for="phone">Telefono</label>
+                        <input class="form-control" id="phone" th:field="*{phone}">
+                    </div>
+                    <div class="col-lg-5">
+                        <label class="form-label" for="address">Direccion</label>
+                        <input class="form-control" id="address" th:field="*{address}">
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="city">Ciudad</label>
+                        <input class="form-control" id="city" th:field="*{city}">
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar proveedor</button>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2>Proveedores</h2>
+                </div>
+                <div class="row g-3 p-3 pb-0">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-blue">
+                            <span>Proveedores activos</span>
+                            <strong th:text="${summary.totalSuppliers}">0</strong>
+                            <small>Directorio operativo</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-green">
+                            <span>Con email</span>
+                            <strong th:text="${summary.suppliersWithEmail}">0</strong>
+                            <small>Listos para compras</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-amber">
+                            <span>Con telefono</span>
+                            <strong th:text="${summary.suppliersWithPhone}">0</strong>
+                            <small>Contacto rapido</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-dark">
+                            <span>Ciudades cubiertas</span>
+                            <strong th:text="${summary.coveredCities}">0</strong>
+                            <small>Zona de proveedores</small>
+                        </div>
+                    </div>
+                </div>
+                <form class="row g-2 mb-3" th:action="@{/suppliers}" method="get">
+                    <div class="col-lg-10">
+                        <label class="form-label" for="supplierSearch">Buscar</label>
+                        <input class="form-control" id="supplierSearch" name="q" th:value="${query}"
+                               placeholder="Proveedor, contacto, email, telefono o ciudad">
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-outline-primary w-100" type="submit">
+                            <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+                        </button>
+                        <a class="btn btn-outline-dark" th:href="@{/suppliers}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Contacto</th>
+                            <th>Email</th>
+                            <th>Telefono</th>
+                            <th>Ciudad</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="supplier : ${supplierPage.content}">
+                            <td><strong th:text="${supplier.name}">Proveedor</strong></td>
+                            <td th:text="${supplier.contactName}">Contacto</td>
+                            <td th:text="${supplier.email}">Email</td>
+                            <td th:text="${supplier.phone}">Telefono</td>
+                            <td th:text="${supplier.city}">Ciudad</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/suppliers/{id}(id=${supplier.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/suppliers/{id}/edit(id=${supplier.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/suppliers/{id}/archive(id=${supplier.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-box-archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(supplierPage.content)}">
+                            <td colspan="6" class="text-center text-secondary py-4">No hay proveedores que coincidan con la busqueda.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <span class="text-muted small" th:text="${supplierPage.totalElements + ' proveedores'}">0 proveedores</span>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:classappend="${supplierPage.first} ? ' disabled'"
+                           th:href="@{/suppliers(q=${query}, page=${supplierPage.number - 1})}">Anterior</a>
+                        <span class="btn btn-sm btn-outline-secondary disabled"
+                              th:text="${(supplierPage.number + 1) + ' / ' + supplierPage.totalPages}">1 / 1</span>
+                        <a class="btn btn-sm btn-outline-dark"
+                           th:classappend="${supplierPage.last} ? ' disabled'"
+                           th:href="@{/suppliers(q=${query}, page=${supplierPage.number + 1})}">Siguiente</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

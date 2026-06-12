@@ -1,0 +1,12 @@
+.git
+.idea
+target
+data
+uploads
+releases
+backups
+logs
+*.iml
+*.ipr
+*.iws
+

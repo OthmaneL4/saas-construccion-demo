@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-blue">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-receipt"></i></div>
+                        <div>
+                            <span>Pagos visibles</span>
+                            <strong th:text="${summary.totalPayments}">0</strong>
+                            <small>Segun filtro actual</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-green">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <span>Confirmado</span>
+                            <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.completedAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                            <small>Dinero ya recibido</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-amber">
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div>
+                            <span>Pendiente</span>
+                            <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.pendingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                            <small>Importe por confirmar</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-dark">
+                        <div class="stat-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <div>
+                            <span>Pagos pendientes</span>
+                            <strong th:text="${summary.pendingPayments}">0</strong>
+                            <small>Requieren seguimiento</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form class="data-panel form-panel" th:action="@{/payments}" th:object="${paymentForm}" method="post">
+                <h2>Registrar pago</h2>
+                <input type="hidden" th:field="*{returnUrl}">
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="invoiceId">Factura</label>
+                        <select class="form-select" id="invoiceId" th:field="*{invoiceId}" th:errorclass="is-invalid">
+                            <option value="">Seleccionar factura</option>
+                            <option th:each="invoice : ${invoices}"
+                                    th:value="${invoice.id}"
+                                    th:attr="data-outstanding=${invoiceAvailableAmounts[invoice.id]}"
+                                    th:text="${invoice.invoiceNumber + ' - ' + invoice.customer.name}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{invoiceId}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="amount">Importe</label>
+                        <input class="form-control" id="amount" type="number" step="0.01" min="0.01" th:field="*{amount}" th:errorclass="is-invalid">
+                        <div class="form-text" id="amountHelp">Se rellena con el pendiente de la factura.</div>
+                        <div class="invalid-feedback" th:errors="*{amount}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="paymentDate">Fecha</label>
+                        <input class="form-control" id="paymentDate" type="date" th:field="*{paymentDate}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{paymentDate}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="method">Metodo</label>
+                        <input class="form-control" id="method" th:field="*{method}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{method}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="status">Estado</label>
+                        <select class="form-select" id="status" th:field="*{status}" th:errorclass="is-invalid">
+                            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{status}"></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar pago</button>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title"><h2>Pagos</h2></div>
+                <form class="row g-2 mb-3" th:action="@{/payments}" method="get">
+                    <div class="col-xl-3 col-lg-6">
+                        <label class="form-label" for="paymentSearch">Buscar</label>
+                        <input class="form-control" id="paymentSearch" name="q" th:value="${query}"
+                               placeholder="Factura, cliente o metodo">
+                    </div>
+                    <div class="col-xl-3 col-lg-6">
+                        <label class="form-label" for="paymentInvoiceFilter">Factura</label>
+                        <select class="form-select" id="paymentInvoiceFilter" name="invoiceId">
+                            <option value="">Todas las facturas</option>
+                            <option th:each="invoice : ${invoices}" th:value="${invoice.id}"
+                                    th:selected="${invoice.id == selectedInvoiceId}"
+                                    th:text="${invoice.invoiceNumber + ' - ' + invoice.customer.name}">Factura</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-6">
+                        <label class="form-label" for="paymentStatusFilter">Estado</label>
+                        <select class="form-select" id="paymentStatusFilter" name="status">
+                            <option value="">Todos</option>
+                            <option th:each="status : ${statuses}"
+                                    th:value="${status}"
+                                    th:selected="${selectedStatus == status}"
+                                    th:text="${status.label}">Estado</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-6">
+                        <label class="form-label" for="paymentFromFilter">Desde</label>
+                        <input class="form-control" id="paymentFromFilter" type="date" name="from" th:value="${fromDate}">
+                    </div>
+                    <div class="col-xl-2 col-lg-6">
+                        <label class="form-label" for="paymentToFilter">Hasta</label>
+                        <input class="form-control" id="paymentToFilter" type="date" name="to" th:value="${toDate}">
+                    </div>
+                    <div class="col-12 d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fa-solid fa-filter"></i> Filtrar
+                        </button>
+                        <a class="btn btn-outline-dark" th:href="@{/payments}"><i class="fa-solid fa-xmark"></i></a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Factura</th>
+                            <th>Cliente</th>
+                            <th>Metodo</th>
+                            <th>Estado</th>
+                            <th>Importe</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="payment : ${payments}">
+                            <td th:text="${payment.paymentDate}">Fecha</td>
+                            <td><strong th:text="${payment.invoice.invoiceNumber}">Factura</strong></td>
+                            <td th:text="${payment.invoice.customer.name}">Cliente</td>
+                            <td th:text="${payment.method}">Metodo</td>
+                            <td><span class="badge-status" th:classappend="${'status-' + payment.status}" th:text="${payment.status.label}">Estado</span></td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(payment.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/payments/{id}(id=${payment.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/payments/{id}/edit(id=${payment.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:if="${payment.status.name() == 'PENDING'}"
+                                          th:action="@{/payments/{id}/confirm(id=${payment.id})}" method="post">
+                                        <input type="hidden" name="returnUrl" th:value="${paymentsReturnUrl}">
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/payments/{id}/archive(id=${payment.id})}" method="post">
+                                        <input type="hidden" name="returnUrl" th:value="${paymentsReturnUrl}">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-box-archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(payments)}">
+                            <td colspan="7" class="text-center text-secondary py-4">Todavia no hay pagos registrados.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

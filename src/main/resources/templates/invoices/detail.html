@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${invoice.invoiceNumber}">Factura</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-success" th:href="@{/invoices/{id}/pdf(id=${invoice.id})}">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </a>
+                        <a th:if="${invoice.status.name() != 'PAID' and invoice.status.name() != 'CANCELLED'}"
+                           class="btn btn-sm btn-outline-primary"
+                           th:href="@{/payments(invoiceId=${invoice.id},returnUrl=${'/invoices/' + invoice.id})}">
+                            <i class="fa-solid fa-money-bill-wave"></i> Registrar pago
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/invoices/{id}/edit(id=${invoice.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/invoices/{id}/archive(id=${invoice.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Cliente</span><strong th:text="${invoice.customer.name}">Cliente</strong></div>
+                    <div class="detail-item"><span>Proyecto</span><strong th:text="${invoice.project != null ? invoice.project.name : '-'}">-</strong></div>
+                    <div class="detail-item"><span>Estado</span><strong><span class="badge-status" th:classappend="${'status-' + invoice.status}" th:text="${invoice.status.label}">Estado</span></strong></div>
+                    <div class="detail-item"><span>Importe</span><strong th:text="${'EUR ' + #numbers.formatDecimal(invoice.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                    <div class="detail-item"><span>Cobrado</span><strong th:text="${'EUR ' + #numbers.formatDecimal(invoice.paidAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                    <div class="detail-item"><span>Pendiente</span><strong th:text="${'EUR ' + #numbers.formatDecimal(invoice.outstandingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                    <div class="detail-item"><span>Emision</span><strong th:text="${invoice.issueDate ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Vencimiento</span><strong th:text="${invoice.dueDate ?: '-'}">-</strong></div>
+                    <div class="detail-item">
+                        <span>Reclamaciones</span>
+                        <strong th:text="${invoice.paymentReminderCount}">0</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Ultima reclamacion</span>
+                        <strong th:text="${invoice.lastPaymentReminderAt != null ? #temporals.format(invoice.lastPaymentReminderAt, 'dd/MM/yyyy HH:mm') : '-'}">-</strong>
+                    </div>
+                    <div th:if="${invoice.quotation != null}" class="detail-item">
+                        <span>Presupuesto origen</span>
+                        <strong><a th:href="@{/quotations/{id}(id=${invoice.quotation.id})}" th:text="${invoice.quotation.quotationNumber}">Presupuesto</a></strong>
+                    </div>
+                </div>
+            </div>
+            <form th:if="${invoice.status.name() != 'PAID' and invoice.status.name() != 'CANCELLED'}"
+                  class="data-panel form-panel"
+                  th:action="@{/invoices/{id}/payment-reminder(id=${invoice.id})}" method="post">
+                <h2>Preparar reclamacion</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="reminderTemplate">Plantilla</label>
+                        <select class="form-select" id="reminderTemplate" name="template">
+                            <option value="">Sin plantilla</option>
+                            <option th:each="template : ${reminderTemplates}"
+                                    th:value="${template.code}"
+                                    th:text="${template.label}">Primer aviso</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-5">
+                        <label class="form-label" for="reminderMessage">Nota adicional</label>
+                        <textarea class="form-control" id="reminderMessage" name="message" rows="3" maxlength="1000"
+                                  placeholder="Ejemplo: Hemos intentado contactar por telefono. Confirme fecha prevista de pago."></textarea>
+                    </div>
+                    <div class="col-lg-3 d-flex flex-column justify-content-end gap-2">
+                        <button class="btn btn-outline-warning" type="submit">
+                            <i class="fa-solid fa-bell"></i> Registrar reclamacion
+                        </button>
+                        <button class="btn btn-outline-success" type="submit"
+                                th:formaction="@{/invoices/{id}/payment-reminder/pdf(id=${invoice.id})}">
+                            <i class="fa-solid fa-file-circle-exclamation"></i> Generar carta PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <form class="data-panel form-panel" th:action="@{/invoices/{id}/lines(id=${invoice.id})}" th:object="${invoiceLineForm}" method="post">
+                <h2>Anadir linea</h2>
+                <div class="row g-3">
+                    <div class="col-lg-5">
+                        <label class="form-label" for="description">Descripcion</label>
+                        <input class="form-control" id="description" th:field="*{description}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="quantity">Cantidad</label>
+                        <input class="form-control" id="quantity" type="number" step="0.01" min="0.01" th:field="*{quantity}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{quantity}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="unitPrice">Precio</label>
+                        <input class="form-control" id="unitPrice" type="number" step="0.01" min="0" th:field="*{unitPrice}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{unitPrice}"></div>
+                    </div>
+                    <div class="col-lg-1">
+                        <label class="form-label" for="vatRate">IVA %</label>
+                        <input class="form-control" id="vatRate" type="number" step="0.01" min="0" th:field="*{vatRate}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{vatRate}"></div>
+                    </div>
+                    <div class="col-lg-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit"><i class="fa-solid fa-plus"></i> Anadir</button>
+                    </div>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2>Lineas de factura</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Descripcion</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>IVA</th>
+                            <th>Subtotal</th>
+                            <th>Total</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="line : ${invoiceLines}">
+                            <td><strong th:text="${line.description}">Linea</strong></td>
+                            <td th:text="${#numbers.formatDecimal(line.quantity, 1, 'POINT', 2, 'COMMA')}">1</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(line.unitPrice, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td th:text="${#numbers.formatDecimal(line.vatRate, 1, 'POINT', 2, 'COMMA') + ' %'}">21 %</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(line.subtotal, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(line.total, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/invoices/{id}/lines/{lineId}/edit(id=${invoice.id},lineId=${line.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:action="@{/invoices/{id}/lines/{lineId}/archive(id=${invoice.id},lineId=${line.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-box-archive"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(invoiceLines)}">
+                            <td colspan="7" class="text-center text-muted py-4">Todavia no hay lineas en esta factura.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Pagos de la factura</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/payments(invoiceId=${invoice.id},returnUrl=${'/invoices/' + invoice.id})}">
+                            <i class="fa-solid fa-money-bill-wave"></i> Registrar pago
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Metodo</th>
+                            <th>Estado</th>
+                            <th>Importe</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="payment : ${payments}">
+                            <td th:text="${payment.paymentDate}">Fecha</td>
+                            <td th:text="${payment.method}">Metodo</td>
+                            <td><span class="badge-status" th:classappend="${'status-' + payment.status}" th:text="${payment.status.label}">Estado</span></td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(payment.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/payments/{id}(id=${payment.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-dark" th:href="@{/payments/{id}/edit(id=${payment.id})}">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    <form th:if="${payment.status.name() == 'PENDING'}"
+                                          th:action="@{/payments/{id}/confirm(id=${payment.id},returnUrl=${'/invoices/' + invoice.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-success" type="submit">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(payments)}">
+                            <td colspan="5" class="text-center text-muted py-4">Todavia no hay pagos registrados para esta factura.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Documentos de la factura</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/documents(customerId=${invoice.customer.id},projectId=${invoice.project != null ? invoice.project.id : null},invoiceId=${invoice.id},returnUrl=${'/invoices/' + invoice.id})}">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Subir documento
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Categoria</th>
+                            <th>Tipo</th>
+                            <th>Tamano</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="document : ${documents}">
+                            <td>
+                                <strong th:text="${document.title}">Documento</strong>
+                                <small class="d-block text-muted" th:text="${document.originalFilename}">archivo.pdf</small>
+                            </td>
+                            <td><span class="badge-status status-PLANNED" th:text="${document.category.label}">Categoria</span></td>
+                            <td><span class="badge text-bg-light border" th:text="${document.fileKindLabel}">PDF</span></td>
+                            <td th:text="${document.readableFileSize}">0 KB</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/documents/{id}(id=${document.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a th:if="${fileAvailability[document.id]}" class="btn btn-sm btn-outline-success" th:href="@{/documents/{id}/download(id=${document.id})}">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                    <span th:unless="${fileAvailability[document.id]}" class="badge text-bg-warning">Revisar</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(documents)}">
+                            <td colspan="5" class="text-center text-muted py-4">Todavia no hay documentos asociados a esta factura.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Historial de reclamaciones</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Pendiente</th>
+                            <th>Usuario</th>
+                            <th>Detalle</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="reminder : ${paymentReminders}">
+                            <td th:text="${#temporals.format(reminder.sentAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                            <td><span class="badge-status status-info" th:text="${reminder.reminderType.label}">Tipo</span></td>
+                            <td th:text="${reminder.status.label}">Estado</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(reminder.outstandingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <strong th:text="${reminder.generatedByName ?: '-'}">Usuario</strong>
+                                <div class="text-secondary small" th:text="${reminder.generatedByEmail ?: '-'}">email</div>
+                            </td>
+                            <td th:text="${reminder.message ?: '-'}">Detalle</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(paymentReminders)}">
+                            <td colspan="6" class="text-center text-muted py-4">Todavia no hay reclamaciones registradas.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

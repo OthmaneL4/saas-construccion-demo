@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <form class="data-panel form-panel" th:action="@{/work-logs/{id}/edit(id=${workLog.id})}" th:object="${workLogForm}" method="post">
+                <h2>Editar parte de horas</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="projectId">Proyecto</label>
+                        <select class="form-select" id="projectId" th:field="*{projectId}" th:errorclass="is-invalid">
+                            <option value="">Selecciona proyecto</option>
+                            <option th:each="project : ${projects}" th:value="${project.id}" th:text="${project.name}">Proyecto</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{projectId}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="workDate">Fecha</label>
+                        <input class="form-control" id="workDate" type="date" th:field="*{workDate}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{workDate}"></div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="workerName">Trabajador</label>
+                        <input class="form-control" id="workerName" th:field="*{workerName}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{workerName}"></div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="description">Trabajo realizado</label>
+                        <input class="form-control" id="description" th:field="*{description}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="hours">Horas</label>
+                        <input class="form-control" id="hours" type="number" step="0.25" min="0.25" th:field="*{hours}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{hours}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="hourlyRate">Tarifa/hora</label>
+                        <input class="form-control" id="hourlyRate" type="number" step="0.01" min="0" th:field="*{hourlyRate}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{hourlyRate}"></div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="status">Estado</label>
+                        <select class="form-select" id="status" th:field="*{status}" th:errorclass="is-invalid">
+                            <option th:each="status : ${T(com.lsototalbouw.timesheet.WorkLogStatus).values()}" th:value="${status}" th:text="${status.label}">Estado</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{status}"></div>
+                    </div>
+                    <div class="col-lg-3 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" id="billable" type="checkbox" th:field="*{billable}">
+                            <label class="form-check-label" for="billable">Facturable</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex justify-content-end gap-2">
+                    <a class="btn btn-outline-dark" th:href="@{/work-logs/{id}(id=${workLog.id})}">Cancelar</a>
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

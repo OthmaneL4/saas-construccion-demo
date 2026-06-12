@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <span>Pendiente total</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalOutstanding, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <span>Vencido</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.overdueOutstanding, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <span>Vence pronto</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.dueSoonOutstanding, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card">
+                        <span>Facturas abiertas</span>
+                        <strong th:text="${summary.openInvoiceCount}">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-xl-8">
+                    <div class="data-panel">
+                        <div class="panel-title">
+                            <h2>Prioridad de cobro</h2>
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices}">Facturas</a>
+                        </div>
+                        <form class="row g-2 mb-3" th:action="@{/receivables}" method="get">
+                            <div class="col-xl-5 col-lg-6">
+                                <label class="form-label" for="receivableSearch">Buscar</label>
+                                <input class="form-control" id="receivableSearch" name="q" th:value="${query}" placeholder="Factura, cliente o proyecto">
+                            </div>
+                            <div class="col-xl-3 col-lg-4">
+                                <label class="form-label" for="receivablePriority">Prioridad</label>
+                                <select class="form-select" id="receivablePriority" name="priority">
+                                    <option value="">Todas</option>
+                                    <option th:each="priority : ${priorityOptions}" th:value="${priority}" th:selected="${priority == selectedPriority}" th:text="${priority}">Prioridad</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 d-flex align-items-end gap-2">
+                                <button class="btn btn-outline-primary w-100" type="submit"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                                <a class="btn btn-outline-dark" th:href="@{/receivables}"><i class="fa-solid fa-xmark"></i></a>
+                            </div>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Prioridad</th>
+                                    <th>Factura</th>
+                                    <th>Cliente</th>
+                                    <th>Pendiente</th>
+                                    <th>Vencimiento</th>
+                                    <th>Dias vencida</th>
+                                    <th>Reclamaciones</th>
+                                    <th class="text-end">Accion</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="row : ${invoiceRows}">
+                                    <td><span class="badge-status" th:classappend="${' status-' + row.statusClass}" th:text="${row.priority}">Alta</span></td>
+                                    <td><strong th:text="${row.invoiceNumber}">INV</strong></td>
+                                    <td>
+                                        <strong th:text="${row.customerName}">Cliente</strong>
+                                        <div class="text-secondary small" th:text="${row.projectName ?: '-'}">Proyecto</div>
+                                    </td>
+                                    <td th:text="${'EUR ' + #numbers.formatDecimal(row.outstandingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                                    <td th:text="${row.dueDate ?: '-'}">-</td>
+                                    <td th:text="${row.daysOverdue > 0 ? row.daysOverdue : '-'}">-</td>
+                                    <td th:text="${row.paymentReminderCount}">0</td>
+                                    <td>
+                                        <div class="row-actions">
+                                            <a class="btn btn-sm btn-outline-success"
+                                               th:href="@{/payments(invoiceId=${row.invoiceId},returnUrl=${'/receivables'})}">
+                                                <i class="fa-solid fa-money-bill-wave"></i>
+                                            </a>
+                                            <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices/{id}(id=${row.invoiceId})}">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(invoiceRows)}">
+                                    <td colspan="8" class="text-center text-muted py-4">No hay cobros pendientes.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-4">
+                    <div class="data-panel">
+                        <div class="panel-title">
+                            <h2>Clientes con deuda</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Facturas</th>
+                                    <th>Pendiente</th>
+                                    <th>Max dias</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="customer : ${customerRows}">
+                                    <td><strong th:text="${customer.customerName}">Cliente</strong></td>
+                                    <td th:text="${customer.invoiceCount}">0</td>
+                                    <td th:text="${'EUR ' + #numbers.formatDecimal(customer.outstandingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                                    <td th:text="${customer.maxDaysOverdue > 0 ? customer.maxDaysOverdue : '-'}">-</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(customerRows)}">
+                                    <td colspan="4" class="text-center text-muted py-4">Sin deuda pendiente.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

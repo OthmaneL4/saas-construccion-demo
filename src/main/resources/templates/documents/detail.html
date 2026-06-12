@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${document.title}">Documento</h2>
+                    <div class="row-actions">
+                        <a th:if="${fileAvailable}" class="btn btn-sm btn-outline-primary" th:href="@{/documents/{id}/preview(id=${document.id})}" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-up-right-from-square"></i> Abrir
+                        </a>
+                        <a th:if="${fileAvailable}" class="btn btn-sm btn-outline-success" th:href="@{/documents/{id}/download(id=${document.id})}">
+                            <i class="fa-solid fa-download"></i> Descargar
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/documents/{id}/edit(id=${document.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/documents/{id}/archive(id=${document.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/documents}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div th:unless="${fileAvailable}" class="alert alert-warning m-3">
+                    Archivo no disponible. Vuelve a subir el documento o revisa la carpeta configurada para documentos.
+                </div>
+                <div class="document-preview">
+                    <div th:if="${fileAvailable and document.image}" class="document-preview-frame image-preview">
+                        <img th:src="@{/documents/{id}/preview(id=${document.id})}" th:alt="${document.title}">
+                    </div>
+                    <div th:if="${fileAvailable and document.pdf}" class="document-preview-frame pdf-preview">
+                        <iframe th:src="@{/documents/{id}/preview(id=${document.id})}" th:title="${document.title}"></iframe>
+                    </div>
+                    <div th:unless="${fileAvailable and (document.image or document.pdf)}" class="document-preview-empty">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <strong>Vista previa no disponible</strong>
+                        <span th:if="${fileAvailable}">Descarga el archivo para revisarlo con la aplicacion correspondiente.</span>
+                        <span th:unless="${fileAvailable}">El registro existe, pero el archivo fisico no esta accesible.</span>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Categoria</span><strong th:text="${document.category.label}">Categoria</strong></div>
+                    <div class="detail-item"><span>Archivo original</span><strong th:text="${document.originalFilename}">archivo.pdf</strong></div>
+                    <div class="detail-item"><span>Tipo</span><strong th:text="${document.fileKindLabel + ' - ' + document.contentType}">application/pdf</strong></div>
+                    <div class="detail-item"><span>Tamano</span><strong th:text="${document.readableFileSize}">0 KB</strong></div>
+                    <div class="detail-item">
+                        <span>SHA-256</span>
+                        <strong th:title="${document.sha256Checksum}" th:text="${document.shortSha256Checksum == null ? '-' : document.shortSha256Checksum}">-</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Cliente</span>
+                        <strong th:if="${document.customer == null}">-</strong>
+                        <strong th:if="${document.customer != null}">
+                            <a th:href="@{/customers/{id}(id=${document.customer.id})}" th:text="${document.customer.name}">Cliente</a>
+                        </strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Proyecto</span>
+                        <strong th:if="${document.project == null}">-</strong>
+                        <strong th:if="${document.project != null}">
+                            <a th:href="@{/projects/{id}(id=${document.project.id})}" th:text="${document.project.name}">Proyecto</a>
+                        </strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Factura</span>
+                        <strong th:if="${document.invoice == null}">-</strong>
+                        <strong th:if="${document.invoice != null}">
+                            <a th:href="@{/invoices/{id}(id=${document.invoice.id})}" th:text="${document.invoice.invoiceNumber}">Factura</a>
+                        </strong>
+                    </div>
+                    <div class="detail-item"><span>Notas</span><strong th:text="${document.notes == null ? '-' : document.notes}">Notas</strong></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

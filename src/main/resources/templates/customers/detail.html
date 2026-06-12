@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${customer.name}">Cliente</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/customers/{id}/edit(id=${customer.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/customers/{id}/archive(id=${customer.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-success" th:href="@{/quotations(customerId=${customer.id})}">
+                            <i class="fa-solid fa-file-signature"></i> Presupuesto
+                        </a>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/customers}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Email</span><strong th:text="${customer.email ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Teléfono</span><strong th:text="${customer.phone ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Ciudad</span><strong th:text="${customer.city ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Dirección</span><strong th:text="${customer.address ?: '-'}">-</strong></div>
+                </div>
+            </div>
+            <div class="row g-3 my-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-blue">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-helmet-safety"></i></div>
+                        <span>Proyectos</span>
+                        <strong th:text="${summary.projectCount}">0</strong>
+                        <small>Trabajos asociados</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-green">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <span>Facturado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalInvoiced, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small th:text="${summary.invoiceCount + ' facturas'}">0 facturas</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-dark">
+                        <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+                        <span>Cobrado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.totalPaid, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Pagos registrados</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-amber">
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <span>Pendiente</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(summary.outstandingAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small>Importe por cobrar</small>
+                    </div>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Proyectos del cliente</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/projects(customerId=${customer.id})}">
+                            <i class="fa-solid fa-plus"></i> Nuevo proyecto
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Proyecto</th>
+                            <th>Estado</th>
+                            <th>Inicio</th>
+                            <th>Direccion</th>
+                            <th>Presupuesto</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="project : ${projects}">
+                            <td><strong th:text="${project.name}">Proyecto</strong></td>
+                            <td><span class="badge-status" th:classappend="${'status-' + project.status}" th:text="${project.status.label}">Estado</span></td>
+                            <td th:text="${project.startDate ?: '-'}">-</td>
+                            <td th:text="${project.workAddress ?: '-'}">-</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(project.budget, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/projects/{id}(id=${project.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(projects)}">
+                            <td colspan="6" class="text-center text-muted py-4">Todavia no hay proyectos asociados a este cliente.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Facturas del cliente</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices(customerId=${customer.id})}">
+                            <i class="fa-solid fa-plus"></i> Nueva factura
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Factura</th>
+                            <th>Proyecto</th>
+                            <th>Estado</th>
+                            <th>Vencimiento</th>
+                            <th>Importe</th>
+                            <th>Cobrado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="invoice : ${invoices}">
+                            <td><strong th:text="${invoice.invoiceNumber}">Factura</strong></td>
+                            <td th:text="${invoice.project == null ? '-' : invoice.project.name}">Proyecto</td>
+                            <td><span class="badge-status" th:classappend="${'status-' + invoice.status}" th:text="${invoice.status.label}">Estado</span></td>
+                            <td th:text="${invoice.dueDate ?: '-'}">-</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(invoice.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(invoice.paidAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices/{id}(id=${invoice.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(invoices)}">
+                            <td colspan="7" class="text-center text-muted py-4">Todavia no hay facturas asociadas a este cliente.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Presupuestos del cliente</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/quotations(customerId=${customer.id})}">
+                            <i class="fa-solid fa-plus"></i> Nuevo presupuesto
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Numero</th>
+                            <th>Titulo</th>
+                            <th>Estado</th>
+                            <th>Emision</th>
+                            <th>Valido hasta</th>
+                            <th>Importe</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="quotation : ${quotations}">
+                            <td><strong th:text="${quotation.quotationNumber}">OFF-001</strong></td>
+                            <td th:text="${quotation.title}">Presupuesto</td>
+                            <td><span class="badge-status status-PLANNED" th:text="${quotation.status.label}">Estado</span></td>
+                            <td th:text="${quotation.issueDate ?: '-'}">-</td>
+                            <td th:text="${quotation.expiryDate ?: '-'}">-</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(quotation.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/quotations/{id}(id=${quotation.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(quotations)}">
+                            <td colspan="7" class="text-center text-muted py-4">Todavia no hay presupuestos asociados a este cliente.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Documentos del cliente</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/documents(customerId=${customer.id},returnUrl=${'/customers/' + customer.id})}">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Subir documento
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Categoria</th>
+                            <th>Proyecto</th>
+                            <th>Factura</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="document : ${documents}">
+                            <td>
+                                <strong th:text="${document.title}">Documento</strong>
+                                <small class="d-block text-muted" th:text="${document.originalFilename}">archivo.pdf</small>
+                            </td>
+                            <td><span class="badge-status status-PLANNED" th:text="${document.category.label}">Categoria</span></td>
+                            <td th:text="${document.project == null ? '-' : document.project.name}">Proyecto</td>
+                            <td th:text="${document.invoice == null ? '-' : document.invoice.invoiceNumber}">Factura</td>
+                            <td><span class="badge text-bg-light border" th:text="${document.fileKindLabel}">PDF</span></td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/documents/{id}(id=${document.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a th:if="${fileAvailability[document.id]}" class="btn btn-sm btn-outline-success" th:href="@{/documents/{id}/download(id=${document.id})}">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                    <span th:unless="${fileAvailability[document.id]}" class="badge text-bg-warning">Revisar</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(documents)}">
+                            <td colspan="6" class="text-center text-muted py-4">Todavia no hay documentos asociados a este cliente.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

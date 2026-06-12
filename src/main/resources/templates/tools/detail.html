@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${tool.name}">Herramienta</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/tools/{id}/edit(id=${tool.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/tools/{id}/archive(id=${tool.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/tools}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>N de serie</span><strong th:text="${tool.serialNumber ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Estado</span><strong><span class="badge-status" th:classappend="${'status-' + tool.status}" th:text="${tool.status.label}">Estado</span></strong></div>
+                    <div class="detail-item"><span>Proximo mantenimiento</span><strong th:text="${tool.nextMaintenanceDate ?: '-'}">-</strong></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

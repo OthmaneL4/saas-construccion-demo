@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${payment.invoice.invoiceNumber}">Pago</h2>
+                    <div class="row-actions">
+                        <form th:if="${payment.status.name() == 'PENDING'}"
+                              th:action="@{/payments/{id}/confirm(id=${payment.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-success" type="submit">
+                                <i class="fa-solid fa-circle-check"></i> Confirmar pago
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/payments/{id}/edit(id=${payment.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/payments/{id}/archive(id=${payment.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/payments}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Factura</span><strong th:text="${payment.invoice.invoiceNumber}">Factura</strong></div>
+                    <div class="detail-item"><span>Cliente</span><strong th:text="${payment.invoice.customer.name}">Cliente</strong></div>
+                    <div class="detail-item"><span>Fecha</span><strong th:text="${payment.paymentDate}">Fecha</strong></div>
+                    <div class="detail-item"><span>Metodo</span><strong th:text="${payment.method}">Metodo</strong></div>
+                    <div class="detail-item"><span>Estado</span><strong><span class="badge-status" th:classappend="${'status-' + payment.status}" th:text="${payment.status.label}">Estado</span></strong></div>
+                    <div class="detail-item"><span>Importe</span><strong th:text="${'EUR ' + #numbers.formatDecimal(payment.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

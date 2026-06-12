@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: lsototalbouw-demo
+    env: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: PORT
+        value: 8080
+      - key: SESSION_COOKIE_SECURE
+        value: true
+      - key: DOCUMENTS_DIR
+        value: /app/uploads/demo-documents

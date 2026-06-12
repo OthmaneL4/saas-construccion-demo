@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <form class="data-panel form-panel" th:action="@{/documents/{id}/edit(id=${document.id})}" th:object="${documentForm}" method="post">
+                <h2>Editar documento</h2>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label" for="title">Titulo</label>
+                        <input class="form-control" id="title" th:field="*{title}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="category">Categoria</label>
+                        <select class="form-select" id="category" th:field="*{category}" th:errorclass="is-invalid">
+                            <option th:each="category : ${T(com.lsototalbouw.document.DocumentCategory).values()}" th:value="${category}" th:text="${category.label}">Categoria</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{category}"></div>
+                    </div>
+                    <div class="col-lg-5">
+                        <label class="form-label">Archivo</label>
+                        <input class="form-control" th:value="${document.originalFilename}" disabled>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="customerId">Cliente</label>
+                        <select class="form-select" id="customerId" th:field="*{customerId}">
+                            <option value="">Sin cliente</option>
+                            <option th:each="customer : ${customers}" th:value="${customer.id}" th:text="${customer.name}">Cliente</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="projectId">Proyecto</label>
+                        <select class="form-select" id="projectId" th:field="*{projectId}">
+                            <option value="">Sin proyecto</option>
+                            <option th:each="project : ${projects}" th:value="${project.id}" th:text="${project.name}">Proyecto</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="invoiceId">Factura</label>
+                        <select class="form-select" id="invoiceId" th:field="*{invoiceId}">
+                            <option value="">Sin factura</option>
+                            <option th:each="invoice : ${invoices}" th:value="${invoice.id}" th:text="${invoice.invoiceNumber + ' - ' + invoice.customer.name}">Factura</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label" for="notes">Notas</label>
+                        <input class="form-control" id="notes" th:field="*{notes}" th:errorclass="is-invalid">
+                        <div class="invalid-feedback" th:errors="*{notes}"></div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex justify-content-end gap-2">
+                    <a class="btn btn-outline-dark" th:href="@{/documents/{id}(id=${document.id})}">Cancelar</a>
+                    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

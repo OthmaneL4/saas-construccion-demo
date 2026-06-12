@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${workLog.description}">Parte de horas</h2>
+                    <div class="row-actions">
+                        <a th:if="${workLog.invoiced}" class="btn btn-sm btn-outline-success" th:href="@{/invoices/{id}(id=${workLog.invoiceLine.invoice.id})}">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Ver factura
+                        </a>
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/work-logs/{id}/edit(id=${workLog.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/work-logs/{id}/archive(id=${workLog.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/work-logs}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Proyecto</span><strong th:text="${workLog.project.name}">Proyecto</strong></div>
+                    <div class="detail-item"><span>Cliente</span><strong th:text="${workLog.project.customer.name}">Cliente</strong></div>
+                    <div class="detail-item"><span>Fecha</span><strong th:text="${workLog.workDate}">Fecha</strong></div>
+                    <div class="detail-item"><span>Trabajador</span><strong th:text="${workLog.workerName}">Trabajador</strong></div>
+                    <div class="detail-item"><span>Horas</span><strong th:text="${#numbers.formatDecimal(workLog.hours, 1, 'POINT', 2, 'COMMA')}">0</strong></div>
+                    <div class="detail-item"><span>Tarifa</span><strong th:text="${'EUR ' + #numbers.formatDecimal(workLog.hourlyRate, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                    <div class="detail-item"><span>Total</span><strong th:text="${workLog.billable ? 'EUR ' + #numbers.formatDecimal(workLog.lineTotal, 1, 'POINT', 2, 'COMMA') : 'No facturable'}">EUR 0</strong></div>
+                    <div class="detail-item"><span>Estado</span><strong th:text="${workLog.status.label}">Estado</strong></div>
+                    <div class="detail-item"><span>Facturado</span><strong th:text="${workLog.invoiced ? 'Si' : 'No'}">No</strong></div>
+                </div>
+            </div>
+            <form th:if="${workLog.billable and !workLog.invoiced and workLog.status.name() == 'APPROVED'}"
+                  class="data-panel form-panel"
+                  th:action="@{/work-logs/{id}/invoice-line(id=${workLog.id})}"
+                  th:object="${workLogInvoiceForm}" method="post">
+                <h2>Facturar horas</h2>
+                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <label class="form-label" for="invoiceId">Factura destino</label>
+                        <select class="form-select" id="invoiceId" th:field="*{invoiceId}" th:errorclass="is-invalid">
+                            <option value="">Selecciona una factura</option>
+                            <option th:each="invoice : ${invoices}"
+                                    th:value="${invoice.id}"
+                                    th:text="${invoice.invoiceNumber + ' - ' + invoice.customer.name + ' - EUR ' + #numbers.formatDecimal(invoice.amount, 1, 'POINT', 2, 'COMMA')}">
+                                Factura
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{invoiceId}"></div>
+                    </div>
+                    <div class="col-lg-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="fa-solid fa-file-circle-plus"></i> Convertir en linea de factura
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

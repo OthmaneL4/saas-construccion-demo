@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${project.name}">Proyecto</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-dark" th:href="@{/projects/{id}/edit(id=${project.id})}">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form th:action="@{/projects/{id}/archive(id=${project.id})}" method="post">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fa-solid fa-box-archive"></i> Archivar
+                            </button>
+                        </form>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/projects}">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>Cliente</span><strong th:text="${project.customer.name}">Cliente</strong></div>
+                    <div class="detail-item"><span>Estado</span><strong><span class="badge-status" th:classappend="${'status-' + project.status}" th:text="${project.status.label}">Estado</span></strong></div>
+                    <div class="detail-item"><span>Direccion de obra</span><strong th:text="${project.workAddress ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Inicio</span><strong th:text="${project.startDate ?: '-'}">-</strong></div>
+                    <div class="detail-item"><span>Presupuesto</span><strong th:text="${'EUR ' + #numbers.formatDecimal(project.budget, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong></div>
+                </div>
+            </div>
+
+            <div class="row g-3 my-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-blue">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <span>Facturado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(profitability.invoiced, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small th:text="${'Cobrado EUR ' + #numbers.formatDecimal(profitability.paid, 1, 'POINT', 2, 'COMMA')}">Cobrado EUR 0</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-amber">
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-receipt"></i></div>
+                        <span>Coste estimado</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(profitability.estimatedCost, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small th:text="${'Gastos EUR ' + #numbers.formatDecimal(profitability.expenses, 1, 'POINT', 2, 'COMMA')}">Gastos EUR 0</small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-green">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-chart-line"></i></div>
+                        <span>Margen</span>
+                        <strong th:text="${'EUR ' + #numbers.formatDecimal(profitability.margin, 1, 'POINT', 2, 'COMMA')}">EUR 0</strong>
+                        <small><span class="badge-status" th:classappend="${profitability.healthClass}" th:text="${profitability.healthLabel}">Rentable</span></small>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="stat-card accent-dark">
+                        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                        <span>Horas registradas</span>
+                        <strong th:text="${#numbers.formatDecimal(profitability.hours, 1, 'POINT', 2, 'COMMA')}">0</strong>
+                        <small th:text="${'Valor mano de obra EUR ' + #numbers.formatDecimal(profitability.laborValue, 1, 'POINT', 2, 'COMMA')}">Valor mano de obra EUR 0</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Facturas del proyecto</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices(projectId=${project.id})}">
+                            <i class="fa-solid fa-plus"></i> Nueva factura
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Factura</th>
+                            <th>Estado</th>
+                            <th>Vencimiento</th>
+                            <th>Importe</th>
+                            <th>Cobrado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="invoice : ${projectInvoices}">
+                            <td><strong th:text="${invoice.invoiceNumber}">Factura</strong></td>
+                            <td><span class="badge-status" th:classappend="${'status-' + invoice.status}" th:text="${invoice.status.label}">Estado</span></td>
+                            <td th:text="${invoice.dueDate ?: '-'}">-</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(invoice.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td th:text="${'EUR ' + #numbers.formatDecimal(invoice.paidAmount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/invoices/{id}(id=${invoice.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(projectInvoices)}">
+                            <td colspan="6" class="text-center text-muted py-4">Todavia no hay facturas asociadas a este proyecto.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-xl-6">
+                    <div class="data-panel h-100">
+                        <div class="panel-title">
+                            <h2>Gastos recientes</h2>
+                            <div class="row-actions">
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/expenses(projectId=${project.id})}">
+                                    <i class="fa-solid fa-plus"></i> Gasto
+                                </a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Concepto</th>
+                                    <th>Categoria</th>
+                                    <th>Importe</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="expense : ${projectExpenses}">
+                                    <td th:text="${expense.expenseDate ?: '-'}">-</td>
+                                    <td><strong th:text="${expense.description}">Gasto</strong></td>
+                                    <td th:text="${expense.category}">Categoria</td>
+                                    <td th:text="${'EUR ' + #numbers.formatDecimal(expense.amount, 1, 'POINT', 2, 'COMMA')}">EUR 0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(projectExpenses)}">
+                                    <td colspan="4" class="text-center text-muted py-4">No hay gastos registrados en este proyecto.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="data-panel h-100">
+                        <div class="panel-title">
+                            <h2>Horas recientes</h2>
+                            <div class="row-actions">
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/work-logs(projectId=${project.id})}">
+                                    <i class="fa-solid fa-plus"></i> Horas
+                                </a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Trabajador</th>
+                                    <th>Descripcion</th>
+                                    <th>Horas</th>
+                                    <th>Estado</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="workLog : ${projectWorkLogs}">
+                                    <td th:text="${workLog.workDate ?: '-'}">-</td>
+                                    <td><strong th:text="${workLog.workerName}">Trabajador</strong></td>
+                                    <td th:text="${workLog.description}">Trabajo</td>
+                                    <td th:text="${#numbers.formatDecimal(workLog.hours, 1, 'POINT', 2, 'COMMA')}">0</td>
+                                    <td><span class="badge-status status-info" th:text="${workLog.status}">Estado</span></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(projectWorkLogs)}">
+                                    <td colspan="5" class="text-center text-muted py-4">No hay horas registradas en este proyecto.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-panel mt-4">
+                <div class="panel-title">
+                    <h2>Documentos del proyecto</h2>
+                    <div class="row-actions">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/documents(customerId=${project.customer.id},projectId=${project.id},returnUrl=${'/projects/' + project.id})}">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Subir documento
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Categoria</th>
+                            <th>Factura</th>
+                            <th>Tipo</th>
+                            <th>Tamano</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="document : ${documents}">
+                            <td>
+                                <strong th:text="${document.title}">Documento</strong>
+                                <small class="d-block text-muted" th:text="${document.originalFilename}">archivo.pdf</small>
+                            </td>
+                            <td><span class="badge-status status-PLANNED" th:text="${document.category.label}">Categoria</span></td>
+                            <td th:text="${document.invoice == null ? '-' : document.invoice.invoiceNumber}">Factura</td>
+                            <td><span class="badge text-bg-light border" th:text="${document.fileKindLabel}">PDF</span></td>
+                            <td th:text="${document.readableFileSize}">0 KB</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/documents/{id}(id=${document.id})}">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a th:if="${fileAvailability[document.id]}" class="btn btn-sm btn-outline-success" th:href="@{/documents/{id}/download(id=${document.id})}">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                    <span th:unless="${fileAvailability[document.id]}" class="badge text-bg-warning">Revisar</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(documents)}">
+                            <td colspan="6" class="text-center text-muted py-4">Todavia no hay documentos asociados a este proyecto.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

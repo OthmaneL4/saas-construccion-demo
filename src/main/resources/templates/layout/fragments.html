@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="app-sidebar">
+    <div class="brand">
+        <span class="brand-mark">LSO</span>
+        <div>
+            <strong>LSOTOTALBOUW</strong>
+            <small>Business Manager</small>
+        </div>
+    </div>
+    <nav class="nav flex-column gap-1">
+        <a class="nav-link" th:classappend="${pageTitle == 'Dashboard'} ? 'active'" th:href="@{/dashboard}">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+        <a class="nav-link" th:if="${canAccessCustomers}" th:classappend="${pageTitle == 'Clientes'} ? 'active'" th:href="@{/customers}">
+            <i class="fa-solid fa-address-book"></i> Clientes
+        </a>
+        <a class="nav-link" th:if="${canAccessOperations}" th:classappend="${pageTitle == 'Proyectos'} ? 'active'" th:href="@{/projects}">
+            <i class="fa-solid fa-helmet-safety"></i> Proyectos
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Presupuestos'} ? 'active'" th:href="@{/quotations}">
+            <i class="fa-solid fa-file-signature"></i> Presupuestos
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Facturas'} ? 'active'" th:href="@{/invoices}">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Facturas
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Pagos'} ? 'active'" th:href="@{/payments}">
+            <i class="fa-solid fa-credit-card"></i> Pagos
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Cobros pendientes'} ? 'active'" th:href="@{/receivables}">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Cobros pendientes
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Rentabilidad'} ? 'active'" th:href="@{/profitability}">
+            <i class="fa-solid fa-scale-balanced"></i> Rentabilidad
+        </a>
+        <a class="nav-link" th:if="${canAccessOperations}" th:classappend="${pageTitle == 'Calendario'} ? 'active'" th:href="@{/calendar}">
+            <i class="fa-solid fa-calendar-days"></i> Calendario
+        </a>
+        <a class="nav-link" th:classappend="${pageTitle == 'Notificaciones'} ? 'active'" th:href="@{/notifications}">
+            <i class="fa-solid fa-bell"></i> Notificaciones
+            <span class="nav-count" th:if="${notificationUnreadCount > 0}" th:text="${notificationUnreadCount}">0</span>
+        </a>
+        <a class="nav-link" th:if="${canAccessOperations}" th:classappend="${pageTitle == 'Partes de horas'} ? 'active'" th:href="@{/work-logs}">
+            <i class="fa-solid fa-business-time"></i> Partes de horas
+        </a>
+        <a class="nav-link" th:if="${canAccessDocuments}" th:classappend="${pageTitle == 'Documentos'} ? 'active'" th:href="@{/documents}">
+            <i class="fa-solid fa-folder-open"></i> Documentos
+        </a>
+        <a class="nav-link" th:if="${canAccessFinance}" th:classappend="${pageTitle == 'Gastos'} ? 'active'" th:href="@{/expenses}">
+            <i class="fa-solid fa-receipt"></i> Gastos
+        </a>
+        <a class="nav-link" th:if="${canAccessInventory}" th:classappend="${pageTitle == 'Materiales'} ? 'active'" th:href="@{/materials}">
+            <i class="fa-solid fa-boxes-stacked"></i> Materiales
+        </a>
+        <a class="nav-link" th:if="${canAccessInventory}" th:classappend="${pageTitle == 'Proveedores'} ? 'active'" th:href="@{/suppliers}">
+            <i class="fa-solid fa-truck-field"></i> Proveedores
+        </a>
+        <a class="nav-link" th:if="${canAccessInventory}" th:classappend="${pageTitle == 'Herramientas'} ? 'active'" th:href="@{/tools}">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Herramientas
+        </a>
+        <a class="nav-link" th:if="${canAccessAudit}" th:classappend="${pageTitle == 'Auditor'} ? 'active'" th:href="@{/audit}">
+            <i class="fa-solid fa-shield-halved"></i> Auditor
+        </a>
+        <a class="nav-link" th:if="${canAccessAdmin}" th:classappend="${pageTitle == 'Usuarios'} ? 'active'" th:href="@{/users}">
+            <i class="fa-solid fa-users-gear"></i> Usuarios
+        </a>
+        <a class="nav-link" th:if="${canAccessAdmin}" th:classappend="${pageTitle == 'Empresa'} ? 'active'" th:href="@{/settings/company}">
+            <i class="fa-solid fa-building-user"></i> Empresa
+        </a>
+    </nav>
+</aside>
+
+<header th:fragment="topbar" class="app-topbar">
+    <div>
+        <h1 th:text="${pageTitle}">Dashboard</h1>
+        <p>Control operativo y financiero de la empresa.</p>
+        <div class="demo-readonly-alert" th:if="${param.demoReadOnly}">
+            Public demo is read-only. Changes are disabled so the portfolio environment stays clean.
+        </div>
+    </div>
+    <div class="topbar-actions">
+        <span class="demo-pill" th:if="${publicDemoEnabled}">
+            <i class="fa-solid fa-flask"></i> Public demo
+        </span>
+        <a class="btn btn-outline-dark btn-sm position-relative" th:href="@{/notifications}">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alertas</span>
+            <span class="notification-dot" th:if="${notificationUnreadCount > 0}" th:text="${notificationUnreadCount}">0</span>
+        </a>
+        <span class="user-pill"><i class="fa-solid fa-user-shield"></i> <span th:text="${currentUserName}">Usuario</span></span>
+        <form th:action="@{/logout}" method="post">
+            <button class="btn btn-outline-dark btn-sm" type="submit">
+                <i class="fa-solid fa-right-from-bracket"></i> Salir
+            </button>
+        </form>
+    </div>
+</header>
+</body>
+</html>

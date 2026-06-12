@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+            <form class="data-panel form-panel mb-4" th:action="@{/notifications}" th:object="${notificationForm}" method="post">
+                <h2>Nuevo recordatorio</h2>
+                <div class="row g-3">
+                    <div class="col-lg-3">
+                        <label class="form-label" for="title">Titulo</label>
+                        <input class="form-control" id="title" th:field="*{title}" th:errorclass="is-invalid"
+                               placeholder="Llamar cliente">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="form-label" for="message">Detalle</label>
+                        <input class="form-control" id="message" th:field="*{message}" th:errorclass="is-invalid"
+                               placeholder="Confirmar medidas, materiales o proxima visita">
+                        <div class="invalid-feedback" th:errors="*{message}"></div>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label" for="dueDate">Fecha</label>
+                        <input class="form-control" id="dueDate" type="date" th:field="*{dueDate}">
+                    </div>
+                    <div class="col-lg-1 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="data-panel">
+                <div class="panel-title">
+                    <div>
+                        <h2>Centro de notificaciones</h2>
+                        <p class="text-secondary mb-0">Riesgos operativos, vencimientos y avisos importantes.</p>
+                    </div>
+                    <form th:action="@{/notifications/read-all}" method="post" th:if="${notificationUnreadCount > 0}">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">
+                            <i class="fa-solid fa-check-double"></i> Marcar todo leido
+                        </button>
+                    </form>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item notification-item py-3"
+                         th:each="notification : ${notifications}"
+                         th:classappend="${notification.unread} ? ' is-unread' : ' is-read'">
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="badge-status mt-1" th:classappend="${' status-' + notification.statusClass}" th:text="${notification.severity}">info</span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <strong th:text="${notification.title}">Titulo</strong>
+                                    <span class="text-secondary small text-nowrap" th:if="${notification.dueDate != null}" th:text="${notification.dueDate}">Fecha</span>
+                                </div>
+                                <p class="text-secondary mb-2" th:text="${notification.message}">Detalle</p>
+                                <div class="row-actions">
+                                    <a class="btn btn-sm btn-outline-primary" th:href="${notification.safeTargetUrl}">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir
+                                    </a>
+                                    <form th:if="${notification.unread}" th:action="@{/notifications/{id}/read(id=${notification.id})}" method="post">
+                                        <button class="btn btn-sm btn-outline-dark" type="submit">
+                                            <i class="fa-solid fa-check"></i> Marcar leida
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item text-center text-muted py-4" th:if="${#lists.isEmpty(notifications)}">
+                        No hay notificaciones pendientes.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

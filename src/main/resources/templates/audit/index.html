@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2>Acciones recientes</h2>
+                    <span class="text-secondary small" th:text="${#lists.size(auditLogs) + ' resultados'}">0 resultados</span>
+                </div>
+                <div class="row g-3 p-3 pb-0">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-blue">
+                            <span>Eventos filtrados</span>
+                            <strong th:text="${summary.totalEvents}">0</strong>
+                            <small>Ultimos registros visibles</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-green">
+                            <span>Cambios de datos</span>
+                            <strong th:text="${summary.dataChangeEvents}">0</strong>
+                            <small>Crear, editar, archivar o convertir</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-amber">
+                            <span>Eventos de login</span>
+                            <strong th:text="${summary.loginEvents}">0</strong>
+                            <small>Accesos correctos o fallidos</small>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card accent-dark">
+                            <span>Eventos criticos</span>
+                            <strong th:text="${summary.criticalEvents}">0</strong>
+                            <small>Fallos o bloqueos de cuenta</small>
+                        </div>
+                    </div>
+                </div>
+                <form class="row g-2 mb-3" action="/audit" method="get">
+                    <div class="col-xl-3 col-lg-4">
+                        <label class="form-label" for="auditAction">Accion</label>
+                        <select class="form-select" id="auditAction" name="action">
+                            <option value="">Todas</option>
+                            <option th:each="action : ${actions}"
+                                    th:value="${action}"
+                                    th:selected="${selectedAction == action}"
+                                    th:text="${action}">CREATE</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4">
+                        <label class="form-label" for="auditModule">Modulo</label>
+                        <input class="form-control" id="auditModule" name="module" list="auditModules"
+                               th:value="${selectedModule ?: ''}" placeholder="Ej. Facturas, Clientes">
+                        <datalist id="auditModules">
+                            <option th:each="moduleName : ${modules}" th:value="${moduleName}"></option>
+                        </datalist>
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label" for="auditUser">Usuario</label>
+                        <input class="form-control" id="auditUser" name="user"
+                               th:value="${selectedUser ?: ''}" placeholder="Email del usuario">
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label" for="auditFrom">Desde</label>
+                        <input class="form-control" id="auditFrom" name="from" type="date" th:value="${selectedFrom}">
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label" for="auditTo">Hasta</label>
+                        <input class="form-control" id="auditTo" name="to" type="date" th:value="${selectedTo}">
+                    </div>
+                    <div class="col-12 d-flex align-items-end justify-content-end gap-2">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fa-solid fa-filter"></i> Filtrar
+                        </button>
+                        <a class="btn btn-outline-success"
+                           th:href="@{/audit/export(action=${selectedAction}, module=${selectedModule}, user=${selectedUser}, from=${selectedFrom}, to=${selectedTo})}">
+                            <i class="fa-solid fa-file-csv"></i>
+                        </a>
+                        <a class="btn btn-outline-dark" th:href="@{/audit}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Accion</th>
+                            <th>Modulo</th>
+                            <th>Registro</th>
+                            <th>Resumen</th>
+                            <th>Detalle</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="log : ${auditLogs}">
+                            <td th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm')}">Fecha</td>
+                            <td th:text="${log.user == null ? '-' : log.user.fullName}">Usuario</td>
+                            <td><span class="badge-status status-SENT" th:text="${log.action}">Accion</span></td>
+                            <td th:text="${log.moduleName}">Modulo</td>
+                            <td th:text="${log.entityId ?: '-'}">ID</td>
+                            <td><strong th:text="${log.summary}">Resumen</strong></td>
+                            <td th:text="${log.details ?: '-'}">Detalle</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(auditLogs)}">
+                            <td colspan="7" class="text-center text-muted py-4">Todavia no hay acciones auditadas.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

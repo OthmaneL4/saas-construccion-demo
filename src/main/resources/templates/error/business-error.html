@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/head :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+    <main class="app-main">
+        <header th:replace="~{layout/fragments :: topbar}"></header>
+        <section class="content">
+            <div class="data-panel">
+                <div class="panel-title">
+                    <h2 th:text="${errorTitle}">No se ha podido completar la accion</h2>
+                    <a class="btn btn-sm btn-outline-primary" th:href="${backUrl}">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                <p class="text-secondary mb-0" th:text="${errorMessage}">
+                    El registro solicitado no esta disponible.
+                </p>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
