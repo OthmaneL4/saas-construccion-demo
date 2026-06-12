@@ -18,6 +18,26 @@ This repository includes a public demo profile designed for portfolio and recrui
 
 Do not enter real personal, customer, financial, or business data in the public demo environment.
 
+## Screenshots
+
+### Dashboard
+
+![Dashboard](docs/assets/screenshots/01-dashboard.png)
+
+### Core Modules
+
+| Projects | Invoices |
+| --- | --- |
+| ![Projects](docs/assets/screenshots/02-projects.png) | ![Invoices](docs/assets/screenshots/03-invoices.png) |
+
+| Documents | Calendar |
+| --- | --- |
+| ![Documents](docs/assets/screenshots/04-documents.png) | ![Calendar](docs/assets/screenshots/05-calendar.png) |
+
+| Audit Trail |
+| --- |
+| ![Audit trail](docs/assets/screenshots/06-audit.png) |
+
 ## Highlights
 
 - Spring Boot MVC application with Thymeleaf and Bootstrap.
@@ -88,6 +108,7 @@ Demo2026!
 ## Documentation
 
 - `docs/PORTFOLIO_DEMO.md`: public demo and LinkedIn/GitHub publishing plan.
+- `docs/LINKEDIN_POST.md`: ready-to-use LinkedIn portfolio post in English and Spanish.
 - `docs/PROJECT_HANDOFF_SUMMARY.md`: current readiness and release candidate status.
 - `docs/FINAL_QA_CHECKLIST.md`: QA coverage and verification checklist.
 - `docs/GO_NO_GO_CHECKLIST.md`: demo and production decision gate.
