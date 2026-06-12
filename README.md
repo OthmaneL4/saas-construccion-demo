@@ -8,6 +8,7 @@ LSOTOTALBOUW centralizes daily operations for a self-employed contractor or smal
 
 This repository includes a public demo profile designed for portfolio and recruiting purposes.
 
+- Live demo: https://lsototalbouw-demo.onrender.com
 - Demo profile: `demo`
 - Demo user: `demo@lsototalbouw.nl`
 - Demo password: `Demo2026!`

@@ -20,6 +20,8 @@ Avoid claiming:
 
 ## Public Demo Credentials
 
+Live demo: https://lsototalbouw-demo.onrender.com
+
 ```text
 Email: demo@lsototalbouw.nl
 Password: Demo2026!
