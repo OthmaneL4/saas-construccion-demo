@@ -22,27 +22,27 @@ Do not enter real personal, customer, financial, or business data in the public 
 
 ### Dashboard
 
-<img src="docs/assets/screenshots/01-dashboard.png" alt="Dashboard" width="100%">
+<img src="docs/assets/screenshots/01-dashboard-wide.png" alt="Dashboard" width="100%">
 
 ### Projects
 
-<img src="docs/assets/screenshots/02-projects.png" alt="Projects" width="100%">
+<img src="docs/assets/screenshots/02-projects-wide.png" alt="Projects" width="100%">
 
 ### Invoices
 
-<img src="docs/assets/screenshots/03-invoices.png" alt="Invoices" width="100%">
+<img src="docs/assets/screenshots/03-invoices-wide.png" alt="Invoices" width="100%">
 
 ### Documents
 
-<img src="docs/assets/screenshots/04-documents.png" alt="Documents" width="100%">
+<img src="docs/assets/screenshots/04-documents-wide.png" alt="Documents" width="100%">
 
 ### Calendar
 
-<img src="docs/assets/screenshots/05-calendar.png" alt="Calendar" width="100%">
+<img src="docs/assets/screenshots/05-calendar-wide.png" alt="Calendar" width="100%">
 
 ### Audit Trail
 
-<img src="docs/assets/screenshots/06-audit.png" alt="Audit trail" width="100%">
+<img src="docs/assets/screenshots/06-audit-wide.png" alt="Audit trail" width="100%">
 
 ## Highlights
 
