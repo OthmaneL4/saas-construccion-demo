@@ -22,21 +22,27 @@ Do not enter real personal, customer, financial, or business data in the public 
 
 ### Dashboard
 
-![Dashboard](docs/assets/screenshots/01-dashboard.png)
+<img src="docs/assets/screenshots/01-dashboard.png" alt="Dashboard" width="100%">
 
-### Core Modules
+### Projects
 
-| Projects | Invoices |
-| --- | --- |
-| ![Projects](docs/assets/screenshots/02-projects.png) | ![Invoices](docs/assets/screenshots/03-invoices.png) |
+<img src="docs/assets/screenshots/02-projects.png" alt="Projects" width="100%">
 
-| Documents | Calendar |
-| --- | --- |
-| ![Documents](docs/assets/screenshots/04-documents.png) | ![Calendar](docs/assets/screenshots/05-calendar.png) |
+### Invoices
 
-| Audit Trail |
-| --- |
-| ![Audit trail](docs/assets/screenshots/06-audit.png) |
+<img src="docs/assets/screenshots/03-invoices.png" alt="Invoices" width="100%">
+
+### Documents
+
+<img src="docs/assets/screenshots/04-documents.png" alt="Documents" width="100%">
+
+### Calendar
+
+<img src="docs/assets/screenshots/05-calendar.png" alt="Calendar" width="100%">
+
+### Audit Trail
+
+<img src="docs/assets/screenshots/06-audit.png" alt="Audit trail" width="100%">
 
 ## Highlights
 
